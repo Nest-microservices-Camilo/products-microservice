@@ -8,6 +8,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaClient } from '@prisma/client';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { Product } from './entities/product.entity';
 
 @Injectable()
 export class ProductsService extends PrismaClient implements OnModuleInit {
@@ -42,7 +43,7 @@ export class ProductsService extends PrismaClient implements OnModuleInit {
     };
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<Product> {
     const product = await this.product.findFirst({
       where: {
         id: id,
@@ -56,11 +57,17 @@ export class ProductsService extends PrismaClient implements OnModuleInit {
     return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: number, updateProductDto: UpdateProductDto) {
+    await this.findOne(id);
+
+    return this.product.update({
+      where: { id },
+      data: updateProductDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: number) {
+    await this.findOne(id);
+    return this.product.delete({ where: { id } });
   }
 }
